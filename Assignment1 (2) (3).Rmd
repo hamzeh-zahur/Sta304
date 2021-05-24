@@ -1,0 +1,214 @@
+---
+title: "STA304 - Summer 2021"
+author: "[Martin Shen - 1006185245]"
+subtitle: Assignment 1
+output:
+  pdf_document: default
+---
+
+```{r, include=FALSE}
+knitr::opts_chunk$set(warning = FALSE, message = FALSE)
+library(openintro)
+library(dplyr)
+library(tidyverse)
+```
+
+
+# Part 1
+
+
+### Goal
+ 
+Currently, post-secondary institutions are facing problems on deciding whether students should come back to campus and attend in-class lectures after a year of fully online courses. This decision depends on the vaccine rollout as well as the daily cases increases. Since daily cases increase is not controllable, the survey asks how students are reacting to the vaccines, their confidence in them, and most importantly if they are willing to take them. This would help the post-secondary institutions to make their decision, if many students are confident and willing to take the vaccine, the school would be safer when having in-class courses. On the other hand, if students are not willing to take vaccines, that could cause potential issues and more concerns when deciding if the school would continue pursuing in-class courses. Finally, the last question asks their preference for in-class or online courses. Therefore, this survey is designed for international students who are currently pursuing a post-secondary institution in North America.
+
+### Procedure
+
+For this survey, I will send an email to all members of ROCSAUT(Republic of China Student Association at the University of Toronto) and ask them to complete it optionally. The sample population is the students currently attending the University of Toronto. The target population would be the members of the club as they also represent the international students that might not have available resources for vaccination right now. The sample population would be the people that have completed the survey. Since the survey is only selecting people that are part of the ROCSAUT, it is excluding a lot of other international students that might come from other places around the world. As a result, a bias may occur since the current status of COVID-19 is different in distinct areas.
+
+### Showcasing the survey.
+
+[https://forms.gle/URcpsQZQaakkzkfE7](https://forms.gle/URcpsQZQaakkzkfE7) 
+
+**Question 1**
+
+How confident are you with the current vaccines? (1 is not confident at all and 5 is very confident)
+
+The benefit of the question is that the scale gives a clear indication of whether students are confident about the survey. On the other hand, respondents may not feel encouraged to provide accurate, honest answers.
+
+**Question 2**
+
+What is your willingness to take the first dose of the vaccine? (1 is not willing and 5 is very willing)
+
+The benefit of the question is that if the confidence in the vaccine relates to willingness to actually take the vaccine. The drawback for the question is that even if they say not willing or willing for this question, future current events or other factors might affect the person's decision again so the question only records what the respondent is feeling at that exact moment. 
+
+**Question 3**
+
+If you have a choice between in-class or online courses, which would you more prefer?
+
+This question would be an indicator to the post institution whether students are wanting to come back on campus or not. However, the drawback is that the respondent may not be aware of their reasons for any given answer due to boredom since the end decision and result isn't decided by the respondent.
+
+# Part 2
+
+## Data
+
+The data was collected from the members of the ROCSAUT. After the survey was collected, a spreadsheet was generated using google forms. Then, I made some minor adjustments to the format of the excel file then exported it as a CSV file. Both categories and numerical variables are collected successfully.
+
+```{r, echo = FALSE}
+
+survey <- read.csv("Vaccination Survey for Post Secondary Students (Responses).csv")
+confidence <- survey$How.confident.are.you.with.the.current.vaccines...1.is.not.confident.at.all.and.5.is.very.confident.
+willingness <- survey$What.is.your.willingness.to.take.the.first.dose.of.the.vaccine..1.is.not.willing.and.5.is.very.willing.
+
+# You may need additional chunks, in case you want to include some of the cleaning output.
+
+```
+
+## Introducing Variables
+
+Data was ready for analysis and did not require any data cleaning process. The variable of the confidence level of the student's towards the vaccine will be used to create a 95% confidence interval. While the willingness to take the vaccine will be used to perform a hypothesis test to compare with the research survey done by Forbes.
+
+
+```{r, echo = FALSE}
+
+options(scipen=999, digits = 5 )
+right_bound <- qnorm(0.975)
+left_bound <- qnorm(0.025)
+sample_average <- mean(confidence)
+marginal_error <- 1.95996*(sd(confidence)/sqrt(25))
+lower_bound <- sample_average - marginal_error
+upper_bound <- sample_average + marginal_error
+sd <- sd(confidence)
+
+summary_table <- matrix(c(left_bound, right_bound, sample_average, marginal_error, lower_bound, upper_bound, sd), ncol=7, byrow=TRUE)
+colnames(summary_table) <- c("Left Bound","Right Bound","Sample Average", "Marginal Error", "Lower Bound", "Upper Bound", "Sd")
+rownames(summary_table) <- c("Value")
+summary_table <- as.table(summary_table)
+summary_table
+# Use this to calculate some summary measures. 
+```
+
+## Numarical Summaries 1
+
+Here we see the numerical summaries of the confidence level of the students towards current vaccine. In order to figure out the true value of the population, we find the critical value of the left and right bound. Then, we calculate the sample average and marginal error using the value we found, to get to the result of our lower and upper bound of the distribution. 
+
+The sample average gives the exact point where the mean of the distribution is. If we divide the marginal error by the lower and upper bound, we find that they are 12 \% value changed from the mean. This would signals that the distribution of the confidence interval for student's confidence level has a relatively normal standard deviation compared to a standard normal distribution which shows that the data are well spread around the mean. Therefore, it suggests that there is not a lot of range of values at the left or right tail of the distribution that is not covered with our confidence interval. Lastly, the lower and upper bound provide us with the interval that captures the middle 95% of our distribution for student's confidence level is (3.31311, 4.36689). These numerical summaries are preparation for the Confidence Interval section.
+
+
+```{r, echo = FALSE}
+
+set.seed(245)
+observed_data <- survey %>%
+  sample_n(size = 15)
+
+boot_mean <- rep(NA, 5000)
+for(i in 1:5000){
+  boot_samp <- observed_data %>% sample_n(size = 15, replace = TRUE)
+  boot_mean[i] <- 
+    as.numeric(boot_samp %>% 
+                 summarize(mean_confidence = mean(How.confident.are.you.with.the.current.vaccines...1.is.not.confident.at.all.and.5.is.very.confident.)))
+}
+boot_mean <- tibble(mean_confidence = boot_mean)
+summary(boot_mean)
+quantile(boot_mean$mean_confidence, c(0.05, 0.95))
+```
+
+### Numerical Summary 2
+
+Here we see the numerical summaries of the mean_confidence after resmapling 5000 times. By looking at the gap between the mean/median with the 1st and 3rd quantile, we can have a rough estimate that the plot will be quite similar to a standard normal distribution curve. Since the minimum is further away from the mean/median than the maximum, we can also predict that the curve might be slightly left-skewed.
+
+```{r, echo = FALSE}
+plot(c(1:25), confidence,  main = "Scatterplot: confidence level towards vaccine", xlab = "students", ylab = "confidence level")
+# Use this to create some plots. 
+
+```
+
+In this scatterplot, we can see that more points are located above 3 for the confidence level. This indicates that there are more students who have more confidence in the vaccine. Therefore, we can conclude that the population mean would be above 3. 
+
+All analysis for this report was programmed using `R version 4.0.2`. 
+
+## Methods
+
+In this survey analysis, there are 2 different methods used.
+
+1. Hypothesis Test
+
+2. Confidence Interval
+
+### Hypothesis Test
+
+In our hypothesis test, we first have to specify the null(one to be tested) and the alternative hypothesis(new theory) that you will come up with that is contrary to the null hypothesis. Using the sample data and assuming the null hypothesis is true, calculate the value of the test statistic. Again, to conduct the hypothesis test for the population mean $\mu$, then we use the t-statistic t* = $\frac{\bar{X}- \mu}{\frac{s}{\sqrt{n}}}$ to calculate the P-Value. P-Value is calculated by using the t* that we calculated and plug the number into $pnorm(t^*)^2$. If the p-value is really small, then that is evidence against the null hypothesis, so therefore we reject it. On the other hand, if the p-value is large, then that is evidence not against the null hypothesis. Therefore we won't reject the null hypothesis. The cutoff for $\alpha$ to rejecting or not rejecting is usually 0.05 since we usually measure a 95% confidence interval and that will lead to a 0.05 alpha level.
+
+More precisely for our case, our goal is to use one random sample of the population of size 20 (20 student's willingness to take the vaccine). The null hypothesis will be set at 85% since new survey shows that 85% of incoming college students are willing to comply with campus vaccine requirements which converts into 4.25 out of 5. Then, we will find the sample mean $\bar{X}$ and standard deviation $s$ to calculate the t* follow by plugging the number into the $pnorm(t^*)^2$ to find the p-value. Since we are used a 95% confidence interval for our report, therefore I will use 0.05 alpha as a cutoff for rejecting or not rejecting the null hypothesis. Since the students at University of Toronto are hard working and eager to learn, I predict that the survey result will not reject the null hypothesis.
+
+### Confidence Interval
+
+First and foremost, since we are about to plunge into the realm of Bootstrapping, it is crucial to define what the terms population and sample refer to, and what they are in our particular context. A population is simply the complete collection of individuals that we are interested in; Confidence is the confidence level for students on the vaccine that was collected in the survey. However, the sample is just one random and representative subset of our population. 
+
+Furthermore, we introduce the idea of **sampling distribution**. *Sampling Distribution** is an alternative approach to traditional hypothesis testing and is notable for being easier to understand and valid for more conditions. Combining these two together, the general objective is to use our sample data to estimate something about the *population*. The goal is to take many random samples from the population and 95 \% of the confidence intervals on those would include the true population mean. I will invoke a sampling distribution [2] to derive the 95\% confidence interval (CI) for the confidence level of students on vaccines in the ROCSAUT.
+
+More precisely for our case, our goal is to use one random sample of the population of size 15 (15 student's confidence level) and develop a sampling distribution to estimate the mean number of student's confidence levels on the vaccines. It is worth mentioning that this is the essence of bootstrapping: re-sampling an initial sample in order to estimate a parameter of interest. Subsequently, we will create sampling distribution confidence intervals to estimate what the true population mean is, and to compute the 95% confidence interval for a true proportion. 95% confidence level was chosen to eliminate the students that really disbelieve in the vaccine and the students that fully believes in the vaccine. As students at the University of Toronto are more educated and want a better learning experience, I expect many of them are confident and willing to take the vaccine in order to get back to in-class courses quickly and safely. According to USCNews[6], education a huge factor when believing in vaccine's safety and effectiveness.
+
+## Results 
+
+### Hypothesis Test
+```{r, echo = FALSE}
+
+# Here you can calculate your test stats, critical values, etc.
+mean_sample <- mean(willingness)
+sd_sample <- sd(willingness)
+t_value <- (3.96-4.25)/(1.13578/sqrt(25))
+p_value <- pnorm(-1.27666)*2
+summary <- matrix(c(mean_sample, sd_sample, t_value, p_value), ncol=4, byrow=TRUE)
+colnames(summary) <- c("mean sample","sd sample","t-value", "p-value")
+rownames(summary) <- c("Value")
+summary <- as.table(summary)
+summary
+# (maybe you want to use the MLE to find the CI or your test stat. That sounds like a good way to order the analysis... I don't know, just spit balling here.)
+
+```
+
+#### Table Analysis
+
+In this hypothesis test, the confidence level of students towards vaccines is 4.25 according to a survey mentioned in the Forbes Article. In order to further test the validity of this data, I randomly sampled 20 students in ROCSAUT. Then, I found the mean confidence level is 3.96 and the standard deviation is 1.14 which I will test if the original claim is reasonable. Therefore, I find the t value -1.277 to further find the p-value of 0.202. Since we are using a 95% interval for our second session, as mentioned in the *Methods* section, we will set the $\alpha$ to reject or not reject at 0.05. As a result, the p-value reveals that 0.202 $\geq$ 0.05 then it is evidence not against $H_{0}$ so we would not reject the null hypothesis. 
+
+### Conclusion 1 
+
+Therefore, we can see that the willingness to take the vaccine is high among the international students that were surveyed. This suggests that the school will be safer if in-class courses do occur in the upcoming school year. As I mentioned in the hypothesis in the *Methods* section, students are hard-working and eager to learn. Based on the result of the hypothesis test, I would say that my hypothesis is correct.
+
+### Confidence Interval 
+
+```{r, echo= FALSE}
+hist(boot_mean$mean_confidence, prob=TRUE, col="grey", main = "Confidence Interval for Mean", xlab = "Samples of Mean Points Per Game") 
+abline(v = 3.2, col="lightblue", lwd = 3)
+abline(v = 4.3333, col="lightblue", lwd = 3 )
+abline(v = 3.8, col="red", lwd=3)
+```
+
+### Description of Plot
+
+The interval that is the middle 95% of our sampling distribution is (3.2, 4.333). Even though the interval isn't always the same but should be fairly close. I set seed using the last 3 digits of my student number which is 245, so it would produce the same data every time. This plot tells us that if we were to repeat this process many times, starting from getting many different samples of 15 unique student's confidence levels and getting a sampling confidence interval for each one. We can conclude that 95% of those confidence intervals would include the true mean confidence level.
+
+### Conclusion 2
+
+The result of the confidence interval reveals that at least 95% of the students have a confidence level for the vaccines above 3. This proves that my prediction that many students would be willing to take the vaccine is correct. Although it doesn't show that people with more education are more confident about the vaccine, the result could hint to the potential result. The result of the survey suggest that the post secondary institution would be more confident when moving courses back to in-classm as many students are willing to take the vaccine and make the learning community safer for everyone.
+
+
+## Bibliography
+
+1. Grolemund, G. (2014, July 16) *Introduction to R Markdown*. RStudio. [https://rmarkdown.rstudio.com/articles_intro.html](https://rmarkdown.rstudio.com/articles_intro.html). (Last Accessed: May 5, 2021) 
+
+2. Dekking, F. M., et al. (2005) *A Modern Introduction to Probability and Statistics: Understanding why and how.* Springer Science & Business Media.
+
+3. Allaire, J.J., et. el. *References: Introduction to R Markdown*. RStudio. [https://rmarkdown.rstudio.com/docs/](https://rmarkdown.rstudio.com/docs/). (Last Accessed: May 5, 2021) 
+
+4. Snap Surveys Blog(2020, September 3) *Advantages and Disadvantages of Surveys* [https://www.snapsurveys.com/blog/advantages-disadvantages-surveys/](https://www.snapsurveys.com/blog/advantages-disadvantages-surveys/)(Last Accessed: May 14, 2021)
+
+5. Forbes(2021) *Most College Students Are Willing To Enroll At Colleges That Have Vaccine Requirements, Says Survey* [https://www.forbes.com/sites/susanadams/2021/04/12/most-college-students-are-willing-to-enroll-at-colleges-that-have-vaccine-requirements-says-survey/?sh=17d440da4e3c](https://www.forbes.com/sites/susanadams/2021/04/12/most-college-students-are-willing-to-enroll-at-colleges-that-have-vaccine-requirements-says-survey/?sh=17d440da4e3c)
+
+6. USC News(2021) *Education is now a bigger factor than race in desire for COVID-19 vaccine* [https://news.usc.edu/182848/education-covid-19-vaccine-safety-risks-usc-study/](https://news.usc.edu/182848/education-covid-19-vaccine-safety-risks-usc-study/)
+
+
+
+
+
+
