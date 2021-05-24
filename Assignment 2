@@ -41,7 +41,8 @@ survey_data <- read_csv("ces2019-phone_clean.csv")
 
 ## Data
 
-<Type here a paragraph introducing the data, its context and as much info about the data collection process that you know.>
+Collection Process
+The data used in this report is from the 2019 Canadian Election Study Phone Survey (Stephenson et al. 2020). The data was gathered after the 2019 Canadian federal election from October to November 2019 by Advanis Inc. A Computer-assisted telephone interviewing (CATI) method was used to collect the data. The interviewer follows a script provided by a software application on a computer which they dictate over the phone. Responses are recorded with a keyboard that corresponds to coded responses displayed by the software. The software has been coded to reject illogical answers (e.g. percentage answers that don't sum to 100) and to skip questions that would not be applicable to the respondent given the previous data. Respondents were from all provinces across Canada, and all either Canadian citizens or permanent residents, aged 18 or older. The variables were weighted across provinces for a more accurate depiction of the overall Canadian population. The sample from the study is composed of data taken from the same individuals at two different points in time (also known as two-wave panel data). The first data collection was during the campaign period and the second was after this period. 
 
 <Type here a summary of the cleaning process (**only add in stuff beyond my original gss_cleaning.R code**). You only need to describe additional cleaning that you and your group did.> ]
 
